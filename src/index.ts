@@ -1,0 +1,1 @@
+export const Epsilon = 0.000001;
