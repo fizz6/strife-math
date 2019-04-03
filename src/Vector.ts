@@ -1,5 +1,4 @@
 export default function Vector(dimensions: number) {
-    
     return class Vector extends Float32Array {
         
         private static get Epsilon(): number {
@@ -10,18 +9,18 @@ export default function Vector(dimensions: number) {
             return dimensions;
         }
         
+        public static copy(v: Vector): Vector {
+            const vector = new Vector();
+            vector.copy(v);
+            return vector;
+        }
+        
         public static get Random(): Vector {
             const vector = new Vector();
             for (var count = 0; count < Vector.Dimensions; ++count) {
                 vector[count] = Math.random();
             }
             return vector;
-        }
-        
-        public static copy<T extends Vector>(v: T): T {
-            const vector = new Vector();
-            vector.copy(v);
-            return vector as T;
         }
         
         public static fromValue(value: number): Vector {
@@ -355,5 +354,4 @@ export default function Vector(dimensions: number) {
         }
         
     }
-    
 }
