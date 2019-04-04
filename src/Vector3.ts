@@ -33,10 +33,6 @@ export default class Vector3 extends Float32Array {
         return Vector3.fromValues(0.0, 0.0, 1.0);
     }
     
-    public static Random(): Vector3 {
-        return Vector3.fromValues(Math.random(), Math.random(), Math.random());
-    }
-    
     public static copy(v3: Vector3): Vector3 {
         return new Vector3().copy(v3);
     }
@@ -139,13 +135,15 @@ export default class Vector3 extends Float32Array {
     public constructor(value: number);
     public constructor(x: number, y: number, z: number);
     public constructor(...args: any[]) {
-        super(2);
+        super(3);
         
         if (args.length == 0) {
             return;
         } else if (args.length == 1) {
             const value = args[0];
-            if (value.constructor instanceof Float32Array) {
+            if (value.constructor == Float32Array) {
+                this.copy(value);
+            } else if (value.constructor == Vector3) {
                 this.copy(value);
             } else if (typeof(value) == "number") {
                 this.setValue(value);
@@ -231,7 +229,7 @@ export default class Vector3 extends Float32Array {
     public min(v3: Vector3): this {
         this[0] = Math.min(this[0], v3[0]);
         this[1] = Math.min(this[1], v3[1]);
-        this[2] = Math.min(this[1], v3[2]);
+        this[2] = Math.min(this[2], v3[2]);
         return this;
     }
     
@@ -303,35 +301,39 @@ export default class Vector3 extends Float32Array {
         return Vector3.fromValues(x, y, z);
     }
     
-    public equals(v3: Vector3, exact: boolean = false): boolean {
-        if (exact) {
-            return (
-                this[0] === v3[0] &&
-                this[1] === v3[1] &&
-                this[2] === v3[2]
-            );
-        } else {
-            const ax = this[0];
-            const ay = this[1];
-            const az = this[2];
-            const bx = v3[0];
-            const by = v3[1];
-            const bz = v3[2];
-            return (
-                Math.abs(ax - bx) <= Epsilon * Math.max(1.0, Math.abs(ax), Math.abs(bx)) &&
-                Math.abs(ay - by) <= Epsilon * Math.max(1.0, Math.abs(ay), Math.abs(by)) &&
-                Math.abs(az - bz) <= Epsilon * Math.max(1.0, Math.abs(az), Math.abs(bz))
-            );
-        }
+    public equals(v3: Vector3): boolean {
+        const ax = this[0];
+        const ay = this[1];
+        const az = this[2];
+        const bx = v3[0];
+        const by = v3[1];
+        const bz = v3[2];
+        return (
+            Math.abs(ax - bx) <= Epsilon * Math.max(1.0, Math.abs(ax), Math.abs(bx)) &&
+            Math.abs(ay - by) <= Epsilon * Math.max(1.0, Math.abs(ay), Math.abs(by)) &&
+            Math.abs(az - bz) <= Epsilon * Math.max(1.0, Math.abs(az), Math.abs(bz))
+        );
     }
     
-    public transform(value: Matrix3 | Matrix4 | Quaternion): this {
+    public exactEquals(v3: Vector3): boolean {
+        return (
+            this[0] === v3[0] &&
+            this[1] === v3[1] &&
+            this[2] === v3[2]
+        );
+    }
+    
+    public transform(m3: Matrix3): this;
+    public transform(m4: Matrix4): this;
+    public transform(q: Quaternion): this;
+    public transform(...args: any[]): this {
+        const value = args[0];
         if (value.constructor == Matrix3) {
-            return this.transformMatrix3(value);
+            return this.transformMatrix3(value as Matrix3);
         } else if (value.constructor == Matrix4) {
-            return this.transformMatrix4(value);
+            return this.transformMatrix4(value as Matrix4);
         } else if (value.constructor == Quaternion) {
-            return this.transformQuaternion(value);
+            return this.transformQuaternion(value as Quaternion);
         } else {
             return this;
         }

@@ -27,10 +27,6 @@ export default class Vector2 extends Float32Array {
         return Vector2.fromValues(0.0, 1.0);
     }
     
-    public static Random(): Vector2 {
-        return Vector2.fromValues(Math.random(), Math.random());
-    }
-    
     public static copy(v2: Vector2): Vector2 {
         return new Vector2().copy(v2);
     }
@@ -126,7 +122,9 @@ export default class Vector2 extends Float32Array {
             return;
         } else if (args.length == 1) {
             const value = args[0];
-            if (value.constructor instanceof Float32Array) {
+            if (value.constructor == Float32Array) {
+                this.copy(value);
+            } else if (value.constructor == Vector2) {
                 this.copy(value);
             } else if (typeof(value) == "number") {
                 this.setValue(value);
@@ -258,33 +256,38 @@ export default class Vector2 extends Float32Array {
         return Vector3.fromValues(0.0, 0.0, z);
     }
     
-    public equals(v2: Vector2, exact: boolean = false): boolean {
-        if (exact) {
-            return (
-                this[0] === v2[0] &&
-                this[1] === v2[1]
-            );
-        } else {
-            const ax = this[0];
-            const ay = this[1];
-            const bx = v2[0];
-            const by = v2[1];
-            return (
-                Math.abs(ax - bx) <= Epsilon * Math.max(1.0, Math.abs(ax), Math.abs(bx)) &&
-                Math.abs(ay - by) <= Epsilon * Math.max(1.0, Math.abs(ay), Math.abs(by))
-            );
-        }
+    public equals(v2: Vector2): boolean {
+        const ax = this[0];
+        const ay = this[1];
+        const bx = v2[0];
+        const by = v2[1];
+        return (
+            Math.abs(ax - bx) <= Epsilon * Math.max(1.0, Math.abs(ax), Math.abs(bx)) &&
+            Math.abs(ay - by) <= Epsilon * Math.max(1.0, Math.abs(ay), Math.abs(by))
+        );
     }
     
-    public transform(value: Matrix2 | Matrix2d | Matrix3 | Matrix4): this {
+    public exactEquals(v2: Vector2): boolean {
+        return (
+            this[0] === v2[0] &&
+            this[1] === v2[1]
+        );
+    }
+    
+    public transform(m2: Matrix2): this;
+    public transform(m2d: Matrix2d): this;
+    public transform(m3: Matrix3): this;
+    public transform(m4: Matrix4): this;
+    public transform(...args: any[]): this {
+        const value = args[0];
         if (value.constructor == Matrix2) {
-            return this.transformMatrix2(value);
+            return this.transformMatrix2(value as Matrix2);
         } else if (value.constructor == Matrix2d) {
-            return this.transformMatrix2d(value);
+            return this.transformMatrix2d(value as Matrix2d);
         } else if (value.constructor == Matrix3) {
-            return this.transformMatrix3(value);
+            return this.transformMatrix3(value as Matrix3);
         } else if (value.constructor == Matrix4) {
-            return this.transformMatrix4(value);
+            return this.transformMatrix4(value as Matrix4);
         } else {
             return this;
         }
