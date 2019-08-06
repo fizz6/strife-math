@@ -3,35 +3,35 @@ import Vector3 from './Vector3';
 import Quaternion from './Quaternion';
 
 export default class Matrix4 extends Float32Array {
-    
+
     public static get Identity(): Matrix4 {
         return new Matrix4();
     }
-    
+
     public static copy(m4: Matrix4): Matrix4 {
         return new Matrix4().copy(m4);
     }
-    
+
     public static fromValue(value: number): Matrix4 {
         return new Matrix4().setValue(value);
     }
-    
+
     public static fromValues(m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number): Matrix4 {
         return new Matrix4().setValues(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
     }
-    
+
     public static fromTranslation(v3: Vector3): Matrix4 {
         return new Matrix4().translate(v3);
     }
-    
-    public static fromRotation(radians: number): Matrix4 {
-        return new Matrix4().rotate(radians);
+
+    public static fromRotation(axis: Vector3, radians: number): Matrix4 {
+        return new Matrix4().rotate(axis, radians);
     }
-    
+
     public static fromScaling(v3: Vector3): Matrix4 {
         return new Matrix4().scale(v3);
     }
-    
+
     // public static projection(width: number, height: number): Matrix4 {
     //     const m4 = new Matrix4();
     //     m4[0] = 2.0 / width;
@@ -40,7 +40,7 @@ export default class Matrix4 extends Float32Array {
     //     m4[7] = 1.0;
     //     return m4;
     // }
-    
+
     public get determinant(): number {
         const m00 = this[0];
         const m01 = this[1];
@@ -72,23 +72,23 @@ export default class Matrix4 extends Float32Array {
         const b11 = m22 * m33 - m23 * m32;
         return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
     }
-    
+
     public get frobenius(): number {
         return Math.hypot(this[0], this[1], this[2], this[3], this[4], this[5], this[6], this[7], this[8], this[9], this[10], this[11], this[12], this[13], this[14], this[15]);
     }
-    
+
     public get transposed(): Matrix4 {
         return new Matrix4(this).transpose();
     }
-    
+
     public get adjugated(): Matrix4 {
         return new Matrix4(this).adjugate();
     }
-    
+
     public get inverted(): Matrix4 {
         return new Matrix4(this).invert();
     }
-    
+
     public constructor();
     public constructor(m4: Matrix4);
     public constructor(array: Float32Array);
@@ -96,7 +96,7 @@ export default class Matrix4 extends Float32Array {
     public constructor(m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number);
     public constructor(...args: any[]) {
         super(16);
-        
+
         if (args.length == 0) {
             this[0] = 1.0;
             this[5] = 1.0;
@@ -111,8 +111,9 @@ export default class Matrix4 extends Float32Array {
                 this.copy(value);
             } else if (value.constructor == Quaternion) {
                 // TODO: Implement this... better...
-                const m4 = Matrix4.fromQuaternion(value);
-                this.copy(m4);
+                throw "Quaternion construction not implemented"
+                //const m4 = Matrix4.fromQuaternion(value);
+                //this.copy(m4);
             } else if (typeof(value) == "number") {
                 this.setValue(value);
             }
@@ -138,12 +139,12 @@ export default class Matrix4 extends Float32Array {
             }
         }
     }
-    
+
     public copy(m4: Matrix4): this {
         this.set(m4);
         return this;
     }
-    
+
     public setValue(value: number): this {
         this[0] = value;
         this[1] = value;
@@ -163,7 +164,7 @@ export default class Matrix4 extends Float32Array {
         this[15] = value;
         return this;
     }
-    
+
     public setValues(m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number): this {
         this[0] = m00;
         this[1] = m01;
@@ -183,7 +184,7 @@ export default class Matrix4 extends Float32Array {
         this[15] = m33;
         return this;
     }
-    
+
     public add(m4: Matrix4): this {
         this[0] += m4[0];
         this[1] += m4[1];
@@ -203,7 +204,7 @@ export default class Matrix4 extends Float32Array {
         this[15] += m4[15];
         return this;
     }
-    
+
     public subtract(m4: Matrix4): this {
         this[0] -= m4[0];
         this[1] -= m4[1];
@@ -223,7 +224,7 @@ export default class Matrix4 extends Float32Array {
         this[15] -= m4[15];
         return this;
     }
-    
+
     public multiply(m4: Matrix4): this;
     public multiply(s: number) : this;
     public multiply(...args: any[]): this {
@@ -235,7 +236,7 @@ export default class Matrix4 extends Float32Array {
         }
         return this;
     }
-    
+
     public multiplyMatrix4(m4: Matrix4): this {
         const a00 = this[0];
         const a01 = this[1];
@@ -287,7 +288,7 @@ export default class Matrix4 extends Float32Array {
         this[15] = b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33;
         return this;
     }
-    
+
     public multiplyScalar(s: number): this {
         this[0] *= s;
         this[1] *= s;
@@ -307,7 +308,7 @@ export default class Matrix4 extends Float32Array {
         this[15] *= s;
         return this;
     }
-    
+
     public equals(m4: Matrix4): boolean {
         const a00 = this[0];
         const a01 = this[1];
@@ -360,7 +361,7 @@ export default class Matrix4 extends Float32Array {
             Math.abs(a33 - b33) <= Epsilon * Math.max(1.0, Math.abs(a33), Math.abs(b33))
         );
     }
-    
+
     public exactEquals(m4: Matrix4): boolean {
         return (
             this[0] === m4[0] &&
@@ -381,7 +382,7 @@ export default class Matrix4 extends Float32Array {
             this[15] === m4[15]
         );
     }
-    
+
     public translate(v3: Vector3): this {
         const x = v3[0];
         const y = v3[1];
@@ -392,12 +393,12 @@ export default class Matrix4 extends Float32Array {
         this[15] = x * this[3] + y * this[7] + z * this[11] + this[15];
         return this;
     }
-    
+
     public rotate(axis: Vector3, radians: number): this {
         // TODO: Implement this...
         return this;
     }
-    
+
     public scale(v3: Vector3): this {
         const x = v3[0];
         const y = v3[1];
@@ -416,7 +417,7 @@ export default class Matrix4 extends Float32Array {
         this[11] *= z;
         return this;
     }
-    
+
     public transpose(): this {
         const m01 = this[1];
         const m02 = this[2];
@@ -438,7 +439,7 @@ export default class Matrix4 extends Float32Array {
         this[14] = m23;
         return this;
     }
-    
+
     public adjugate(): this {
         const m00 = this[0];
         const m01 = this[1];
@@ -474,7 +475,7 @@ export default class Matrix4 extends Float32Array {
         this[15] = (m00 * (m11 * m22 - m12 * m21) - m10 * (m01 * m22 - m02 * m21) + m20 * (m01 * m12 - m02 * m11));
         return this;
     }
-    
+
     public invert(): this {
         const m00 = this[0];
         const m01 = this[1];
@@ -526,5 +527,5 @@ export default class Matrix4 extends Float32Array {
         }
         return this;
     }
-    
+
 }
